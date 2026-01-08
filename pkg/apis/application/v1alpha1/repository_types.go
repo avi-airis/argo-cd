@@ -7,16 +7,15 @@ import (
 	"strings"
 	"time"
 
-	"github.com/argoproj/argo-cd/v3/util/oci"
+	log "github.com/sirupsen/logrus"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/argoproj/argo-cd/v3/common"
 	"github.com/argoproj/argo-cd/v3/util/cert"
 	"github.com/argoproj/argo-cd/v3/util/git"
 	"github.com/argoproj/argo-cd/v3/util/helm"
+	"github.com/argoproj/argo-cd/v3/util/oci"
 	"github.com/argoproj/argo-cd/v3/util/workloadidentity"
-
-	log "github.com/sirupsen/logrus"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 // RepoCreds holds the definition for repository credentials
@@ -112,6 +111,8 @@ type Repository struct {
 	NoProxy string `json:"noProxy,omitempty" protobuf:"bytes,23,opt,name=noProxy"`
 	// UseAzureWorkloadIdentity specifies whether to use Azure Workload Identity for authentication
 	UseAzureWorkloadIdentity bool `json:"useAzureWorkloadIdentity,omitempty" protobuf:"bytes,24,opt,name=useAzureWorkloadIdentity"`
+	// UseGCPWorkloadIdentity specifies whether to use GCP Workload Identity for authentication to Google Artifact Registry
+	UseGCPWorkloadIdentity    bool   `json:"useGCPWorkloadIdentity,omitempty" protobuf:"bytes,28,opt,name=useGCPWorkloadIdentity"`
 	// BearerToken contains the bearer token used for Git BitBucket Data Center auth at the repo server
 	BearerToken string `json:"bearerToken,omitempty" protobuf:"bytes,25,opt,name=bearerToken"`
 	// InsecureOCIForceHttp specifies whether the connection to the repository uses TLS at _all_. If true, no TLS. This flag is applicable for OCI repos only.
@@ -289,6 +290,10 @@ func (repo *Repository) GetHelmCreds() helm.Creds {
 			repo.Insecure,
 			workloadidentity.NewWorkloadIdentityTokenProvider(),
 		)
+	}
+
+	if repo.UseGCPWorkloadIdentity {
+		return helm.NewGCPWorkloadIdentityCreds(repo.Repo)
 	}
 
 	return helm.HelmCreds{
