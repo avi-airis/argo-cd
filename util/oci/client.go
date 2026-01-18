@@ -117,7 +117,7 @@ func NewClient(repoURL string, creds Creds, proxy, noProxy string, layerMediaTyp
 
 func NewClientWithLock(repoURL string, creds Creds, repoLock sync.KeyLock, proxyURL, noProxy string, layerMediaTypes []string, opts ...ClientOpts) (Client, error) {
 	ctx := context.Background()
-	
+
 	ociRepo := strings.TrimPrefix(repoURL, "oci://")
 	repo, err := remote.NewRepository(ociRepo)
 	if err != nil {

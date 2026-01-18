@@ -37,7 +37,6 @@ type gcpTokenResponse struct {
 	TokenType   string `json:"token_type"`
 }
 
-
 func GetGCPWorkloadIdentityToken(ctx context.Context) (Token, error) {
 	// Fetch token from the metadata server
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, "http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/token", nil)
@@ -46,7 +45,7 @@ func GetGCPWorkloadIdentityToken(ctx context.Context) (Token, error) {
 	}
 	req.Header.Add("Metadata-Flavor", "Google")
 
-		client := &http.Client{
+	client := &http.Client{
 		Timeout: 5 * time.Second,
 	}
 

@@ -300,12 +300,12 @@ func (creds AzureWorkloadIdentityCreds) challengeAzureContainerRegistry(ctx cont
 var _ Creds = GCPWorkloadIdentity{}
 
 type GCPWorkloadIdentity struct {
-	repoURL            string
+	repoURL string
 }
 
 func NewGCPWorkloadIdentityCreds(repoURL string) GCPWorkloadIdentity {
 	return GCPWorkloadIdentity{
-		repoURL:            repoURL,
+		repoURL: repoURL,
 	}
 }
 
