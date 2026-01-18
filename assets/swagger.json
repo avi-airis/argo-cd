@@ -4039,6 +4039,12 @@
             "description": "Whether https should be disabled for an OCI repo.",
             "name": "insecureOciForceHttp",
             "in": "query"
+          },
+          {
+            "type": "boolean",
+            "description": "Whether to use GCP workload identity for authentication.",
+            "name": "useGCPWorkloadIdentity",
+            "in": "query"
           }
         ],
         "responses": {
@@ -4882,6 +4888,12 @@
             "type": "boolean",
             "description": "Whether https should be disabled for an OCI repo.",
             "name": "insecureOciForceHttp",
+            "in": "query"
+          },
+          {
+            "type": "boolean",
+            "description": "Whether to use GCP workload identity for authentication.",
+            "name": "useGCPWorkloadIdentity",
             "in": "query"
           }
         ],
