@@ -191,6 +191,7 @@ func NewRepoAddCommand(clientOpts *argocdclient.ClientOptions) *cobra.Command {
 			repoOpts.Repo.NoProxy = repoOpts.NoProxy
 			repoOpts.Repo.ForceHttpBasicAuth = repoOpts.ForceHttpBasicAuth
 			repoOpts.Repo.UseAzureWorkloadIdentity = repoOpts.UseAzureWorkloadIdentity
+			repoOpts.Repo.UseGCPWorkloadIdentity = repoOpts.UseGCPWorkloadIdentity
 			repoOpts.Repo.Depth = repoOpts.Depth
 
 			if repoOpts.Repo.Type == "helm" && repoOpts.Repo.Name == "" {
@@ -245,6 +246,7 @@ func NewRepoAddCommand(clientOpts *argocdclient.ClientOptions) *cobra.Command {
 				GcpServiceAccountKey:       repoOpts.Repo.GCPServiceAccountKey,
 				ForceHttpBasicAuth:         repoOpts.Repo.ForceHttpBasicAuth,
 				UseAzureWorkloadIdentity:   repoOpts.Repo.UseAzureWorkloadIdentity,
+				UseGCPWorkloadIdentity:     repoOpts.Repo.UseGCPWorkloadIdentity,
 				InsecureOciForceHttp:       repoOpts.Repo.InsecureOCIForceHttp,
 			}
 			_, err = repoIf.ValidateAccess(ctx, &repoAccessReq)
