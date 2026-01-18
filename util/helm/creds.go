@@ -333,12 +333,6 @@ func (creds GCPWorkloadIdentity) GetInsecureSkipVerify() bool {
 	return false
 }
 
-type gcpTokenResponse struct {
-	AccessToken string `json:"access_token"`
-	ExpiresIn   int    `json:"expires_in"`
-	TokenType   string `json:"token_type"`
-}
-
 func (creds GCPWorkloadIdentity) GetAccessToken() (string, error) {
 	registryHost := strings.Split(creds.repoURL, "/")[0]
 	ctx := context.Background()
@@ -356,44 +350,15 @@ func (creds GCPWorkloadIdentity) GetAccessToken() (string, error) {
 		return t.(string), nil
 	}
 
-	// Fetch token from the metadata server
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, "http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/token", nil)
+	token, err := workloadidentity.GetGCPWorkloadIdentityToken(ctx)
 	if err != nil {
-		return "", fmt.Errorf("failed to create request to metadata server: %w", err)
-	}
-	req.Header.Add("Metadata-Flavor", "Google")
-
-	client := &http.Client{
-		Timeout: 5 * time.Second,
+		return "", fmt.Errorf("failed to get GCP workload identity token: %w", err)
 	}
 
-	resp, err := client.Do(req)
-	if err != nil {
-		return "", fmt.Errorf("failed to get token from metadata server: %w", err)
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		return "", fmt.Errorf("metadata server returned non-200 status: %d", resp.StatusCode)
-	}
-
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return "", fmt.Errorf("failed to read response body from metadata server: %w", err)
-	}
-
-
-	var tr gcpTokenResponse
-	err = json.Unmarshal(body, &tr)
-	if err != nil {
-		return "", fmt.Errorf("failed to unmarshal token response: %w", err)
-	}
-
-	tokenExpiry := time.Now().Add(time.Duration(tr.ExpiresIn) * time.Second)
-	cacheExpiry := workloadidentity.CalculateCacheExpiryBasedOnTokenExpiry(tokenExpiry)
+	cacheExpiry := workloadidentity.CalculateCacheExpiryBasedOnTokenExpiry(token.ExpiresOn)
 	if cacheExpiry > 0 {
-		gcpTokenCache.Set(key, tr.AccessToken, cacheExpiry)
+		gcpTokenCache.Set(key, token.AccessToken, cacheExpiry)
 	}
 
-	return tr.AccessToken, nil
+	return token.AccessToken, nil
 }

@@ -19,24 +19,22 @@ import (
 	"strings"
 	"time"
 
+	"github.com/argoproj/pkg/sync"
 	securejoin "github.com/cyphar/filepath-securejoin"
 	imagev1 "github.com/opencontainers/image-spec/specs-go/v1"
-	"oras.land/oras-go/v2/content/oci"
-
-	"github.com/argoproj/argo-cd/v3/util/versions"
-
-	"github.com/argoproj/pkg/sync"
 	log "github.com/sirupsen/logrus"
+	"oras.land/oras-go/v2"
+	"oras.land/oras-go/v2/content/file"
+	"oras.land/oras-go/v2/content/oci"
+	"oras.land/oras-go/v2/registry/remote"
+	"oras.land/oras-go/v2/registry/remote/auth"
 
 	"github.com/argoproj/argo-cd/v3/util/cache"
 	utilio "github.com/argoproj/argo-cd/v3/util/io"
 	"github.com/argoproj/argo-cd/v3/util/io/files"
 	"github.com/argoproj/argo-cd/v3/util/proxy"
-
-	"oras.land/oras-go/v2"
-	"oras.land/oras-go/v2/content/file"
-	"oras.land/oras-go/v2/registry/remote"
-	"oras.land/oras-go/v2/registry/remote/auth"
+	"github.com/argoproj/argo-cd/v3/util/versions"
+	"github.com/argoproj/argo-cd/v3/util/workloadidentity"
 )
 
 var (
@@ -84,6 +82,7 @@ type Creds struct {
 	KeyData            []byte
 	InsecureSkipVerify bool
 	InsecureHTTPOnly   bool
+	UseGCPWorkloadID   bool
 }
 
 type ClientOpts func(c *nativeOCIClient)
@@ -117,6 +116,8 @@ func NewClient(repoURL string, creds Creds, proxy, noProxy string, layerMediaTyp
 }
 
 func NewClientWithLock(repoURL string, creds Creds, repoLock sync.KeyLock, proxyURL, noProxy string, layerMediaTypes []string, opts ...ClientOpts) (Client, error) {
+	ctx := context.Background()
+	
 	ociRepo := strings.TrimPrefix(repoURL, "oci://")
 	repo, err := remote.NewRepository(ociRepo)
 	if err != nil {
@@ -145,6 +146,16 @@ func NewClientWithLock(repoURL string, creds Creds, repoLock sync.KeyLock, proxy
 			},
 		*/
 	}
+
+	if creds.UseGCPWorkloadID {
+		token, err := workloadidentity.GetGCPWorkloadIdentityToken(ctx)
+		if err != nil {
+			return nil, fmt.Errorf("failed to get GCP workload identity token: %w", err)
+		}
+		creds.Username = "oauth2accesstoken"
+		creds.Password = token.AccessToken
+	}
+
 	repo.Client = &auth.Client{
 		Client: client,
 		Cache:  nil,
