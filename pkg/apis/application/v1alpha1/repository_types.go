@@ -55,7 +55,7 @@ type RepoCreds struct {
 	// UseAzureWorkloadIdentity specifies whether to use Azure Workload Identity for authentication
 	UseAzureWorkloadIdentity bool `json:"useAzureWorkloadIdentity,omitempty" protobuf:"bytes,24,opt,name=useAzureWorkloadIdentity"`
 	// UseGCPWorkloadIdentity specifies whether to use GCP Workload Identity for authentication to Google Artifact Registry
-	UseGCPWorkloadIdentity    bool   `json:"useGCPWorkloadIdentity,omitempty" protobuf:"bytes,28,opt,name=useGCPWorkloadIdentity"`
+	UseGCPWorkloadIdentity bool `json:"useGCPWorkloadIdentity,omitempty" protobuf:"bytes,28,opt,name=useGCPWorkloadIdentity"`
 	// BearerToken contains the bearer token used for Git BitBucket Data Center auth at the repo server
 	BearerToken string `json:"bearerToken,omitempty" protobuf:"bytes,25,opt,name=bearerToken"`
 	// InsecureOCIForceHttp specifies whether the connection to the repository uses TLS at _all_. If true, no TLS. This flag is applicable for OCI repos only.
@@ -114,7 +114,7 @@ type Repository struct {
 	// UseAzureWorkloadIdentity specifies whether to use Azure Workload Identity for authentication
 	UseAzureWorkloadIdentity bool `json:"useAzureWorkloadIdentity,omitempty" protobuf:"bytes,24,opt,name=useAzureWorkloadIdentity"`
 	// UseGCPWorkloadIdentity specifies whether to use GCP Workload Identity for authentication to Google Artifact Registry
-	UseGCPWorkloadIdentity    bool   `json:"useGCPWorkloadIdentity,omitempty" protobuf:"bytes,28,opt,name=useGCPWorkloadIdentity"`
+	UseGCPWorkloadIdentity bool `json:"useGCPWorkloadIdentity,omitempty" protobuf:"bytes,28,opt,name=useGCPWorkloadIdentity"`
 	// BearerToken contains the bearer token used for Git BitBucket Data Center auth at the repo server
 	BearerToken string `json:"bearerToken,omitempty" protobuf:"bytes,25,opt,name=bearerToken"`
 	// InsecureOCIForceHttp specifies whether the connection to the repository uses TLS at _all_. If true, no TLS. This flag is applicable for OCI repos only.
@@ -399,7 +399,7 @@ func (repo *Repository) Sanitized() *Repository {
 		GithubAppInstallationId:    repo.GithubAppInstallationId,
 		GitHubAppEnterpriseBaseURL: repo.GitHubAppEnterpriseBaseURL,
 		UseAzureWorkloadIdentity:   repo.UseAzureWorkloadIdentity,
-		UseGCPWorkloadIdentity: repo.UseGCPWorkloadIdentity,
+		UseGCPWorkloadIdentity:     repo.UseGCPWorkloadIdentity,
 	}
 }
 

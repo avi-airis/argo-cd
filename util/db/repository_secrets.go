@@ -401,6 +401,12 @@ func secretToRepository(secret *corev1.Secret) (*appsv1.Repository, error) {
 	}
 	repository.UseAzureWorkloadIdentity = useAzureWorkloadIdentity
 
+	useGCPWorkloadIdentity, err := boolOrFalse(secret, "useGCPWorkloadIdentity")
+	if err != nil {
+		return repository, err
+	}
+	repository.UseGCPWorkloadIdentity = useGCPWorkloadIdentity
+
 	depth, err := intOrZero(secret, "depth")
 	if err != nil {
 		return repository, err
@@ -443,7 +449,7 @@ func (s *secretsRepositoryBackend) repositoryToSecret(repository *appsv1.Reposit
 	updateSecretString(secretCopy, "gcpServiceAccountKey", repository.GCPServiceAccountKey)
 	updateSecretBool(secretCopy, "forceHttpBasicAuth", repository.ForceHttpBasicAuth)
 	updateSecretBool(secretCopy, "useAzureWorkloadIdentity", repository.UseAzureWorkloadIdentity)
-	updateSecretInt(secretCopy, "depth", repository.Depth)
+	updateSecretBool(secretCopy, "useGCPWorkloadIdentity", repository.UseGCPWorkloadIdentity)
 	addSecretMetadata(secretCopy, s.getSecretType())
 
 	return secretCopy
@@ -504,6 +510,12 @@ func (s *secretsRepositoryBackend) secretToRepoCred(secret *corev1.Secret) (*app
 	}
 	repository.UseAzureWorkloadIdentity = useAzureWorkloadIdentity
 
+	useGCPWorkloadIdentity, err := boolOrFalse(secret, "useGCPWorkloadIdentity")
+	if err != nil {
+		return repository, err
+	}
+	repository.UseGCPWorkloadIdentity = useGCPWorkloadIdentity
+
 	return repository, nil
 }
 
@@ -533,6 +545,7 @@ func (s *secretsRepositoryBackend) repoCredsToSecret(repoCreds *appsv1.RepoCreds
 	updateSecretString(secretCopy, "noProxy", repoCreds.NoProxy)
 	updateSecretBool(secretCopy, "forceHttpBasicAuth", repoCreds.ForceHttpBasicAuth)
 	updateSecretBool(secretCopy, "useAzureWorkloadIdentity", repoCreds.UseAzureWorkloadIdentity)
+	updateSecretBool(secretCopy, "useGCPWorkloadIdentity", repoCreds.UseGCPWorkloadIdentity)
 	addSecretMetadata(secretCopy, s.getRepoCredSecretType())
 
 	return secretCopy

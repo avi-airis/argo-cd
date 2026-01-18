@@ -17,11 +17,6 @@ import (
 	"time"
 
 	"github.com/TomOnTime/utfutil"
-	imagev1 "github.com/opencontainers/image-spec/specs-go/v1"
-	"sigs.k8s.io/yaml"
-
-	"github.com/argoproj/argo-cd/v3/util/oci"
-
 	"github.com/argoproj/gitops-engine/pkg/utils/kube"
 	textutils "github.com/argoproj/gitops-engine/pkg/utils/text"
 	"github.com/argoproj/pkg/v2/sync"
@@ -31,6 +26,7 @@ import (
 	"github.com/google/go-jsonnet"
 	"github.com/google/uuid"
 	grpc_retry "github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/retry"
+	imagev1 "github.com/opencontainers/image-spec/specs-go/v1"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/sync/semaphore"
 	"google.golang.org/grpc/codes"
@@ -42,6 +38,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	k8sversion "k8s.io/apimachinery/pkg/util/version"
 	kubeyaml "k8s.io/apimachinery/pkg/util/yaml"
+	"sigs.k8s.io/yaml"
 
 	pluginclient "github.com/argoproj/argo-cd/v3/cmpserver/apiclient"
 	"github.com/argoproj/argo-cd/v3/common"
@@ -63,6 +60,7 @@ import (
 	pathutil "github.com/argoproj/argo-cd/v3/util/io/path"
 	"github.com/argoproj/argo-cd/v3/util/kustomize"
 	"github.com/argoproj/argo-cd/v3/util/manifeststream"
+	"github.com/argoproj/argo-cd/v3/util/oci"
 	"github.com/argoproj/argo-cd/v3/util/settings"
 	"github.com/argoproj/argo-cd/v3/util/versions"
 )
@@ -1068,6 +1066,7 @@ func getHelmRepos(appPath string, repositories []*v1alpha1.Repository, helmRepoC
 				repo.TLSClientCertData = repositoryCredential.TLSClientCertData
 				repo.TLSClientCertKey = repositoryCredential.TLSClientCertKey
 				repo.UseAzureWorkloadIdentity = repositoryCredential.UseAzureWorkloadIdentity
+				repo.UseGCPWorkloadIdentity = repositoryCredential.UseGCPWorkloadIdentity
 			} else if repo.EnableOCI {
 				// finally if repo is OCI and no credentials found, use the first OCI credential matching by hostname
 				// see https://github.com/argoproj/argo-cd/issues/14636
@@ -1081,6 +1080,7 @@ func getHelmRepos(appPath string, repositories []*v1alpha1.Repository, helmRepoC
 						repo.Username = cred.Username
 						repo.Password = cred.Password
 						repo.UseAzureWorkloadIdentity = cred.UseAzureWorkloadIdentity
+						repo.UseGCPWorkloadIdentity = cred.UseGCPWorkloadIdentity
 						repo.EnableOCI = true
 						break
 					}

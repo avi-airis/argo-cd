@@ -19,6 +19,8 @@ import (
 	"sync"
 	"time"
 
+	enginecache "github.com/argoproj/gitops-engine/pkg/cache"
+	timeutil "github.com/argoproj/pkg/v2/time"
 	log "github.com/sirupsen/logrus"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -31,9 +33,6 @@ import (
 	v1listers "k8s.io/client-go/listers/core/v1"
 	"k8s.io/client-go/tools/cache"
 	"sigs.k8s.io/yaml"
-
-	enginecache "github.com/argoproj/gitops-engine/pkg/cache"
-	timeutil "github.com/argoproj/pkg/v2/time"
 
 	"github.com/argoproj/argo-cd/v3/common"
 	"github.com/argoproj/argo-cd/v3/pkg/apis/application/v1alpha1"
@@ -222,10 +221,15 @@ type OIDCConfig struct {
 	EnablePKCEAuthentication bool                   `json:"enablePKCEAuthentication,omitempty"`
 	DomainHint               string                 `json:"domainHint,omitempty"`
 	Azure                    *AzureOIDCConfig       `json:"azure,omitempty"`
+	GCP                      *GCPOIDCConfig         `json:"gcp,omitempty"`
 	RefreshTokenThreshold    string                 `json:"refreshTokenThreshold,omitempty"`
 }
 
 type AzureOIDCConfig struct {
+	UseWorkloadIdentity bool `json:"useWorkloadIdentity,omitempty"`
+}
+
+type GCPOIDCConfig struct {
 	UseWorkloadIdentity bool `json:"useWorkloadIdentity,omitempty"`
 }
 
@@ -366,6 +370,8 @@ type Repository struct {
 	ForceHttpBasicAuth bool `json:"forceHttpBasicAuth,omitempty"` //nolint:revive //FIXME(var-naming)
 	// UseAzureWorkloadIdentity specifies whether to use Azure Workload Identity for authentication
 	UseAzureWorkloadIdentity bool `json:"useAzureWorkloadIdentity,omitempty"`
+	// UseGCPWorkloadIdentity specifies whether to use GCP Workload Identity for authentication
+	UseGCPWorkloadIdentity bool `json:"useGCPWorkloadIdentity,omitempty"`
 }
 
 // Credential template for accessing repositories
@@ -400,6 +406,8 @@ type RepositoryCredentials struct {
 	ForceHttpBasicAuth bool `json:"forceHttpBasicAuth,omitempty"` //nolint:revive //FIXME(var-naming)
 	// UseAzureWorkloadIdentity specifies whether to use Azure Workload Identity for authentication
 	UseAzureWorkloadIdentity bool `json:"useAzureWorkloadIdentity,omitempty"`
+	// UseGCPWorkloadIdentity specifies whether to use GCP Workload Identity for authentication
+	UseGCPWorkloadIdentity bool `json:"useGCPWorkloadIdentity,omitempty"`
 }
 
 // DeepLink structure
@@ -1988,6 +1996,13 @@ func (a *ArgoCDSettings) OAuth2UsePKCE() bool {
 func (a *ArgoCDSettings) UseAzureWorkloadIdentity() bool {
 	if oidcConfig := a.OIDCConfig(); oidcConfig != nil && oidcConfig.Azure != nil {
 		return oidcConfig.Azure.UseWorkloadIdentity
+	}
+	return false
+}
+
+func (a *ArgoCDSettings) UseGCPWorkloadIdentity() bool {
+	if oidcConfig := a.OIDCConfig(); oidcConfig != nil && oidcConfig.GCP != nil {
+		return oidcConfig.GCP.UseWorkloadIdentity
 	}
 	return false
 }
